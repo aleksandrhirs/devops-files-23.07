@@ -11,3 +11,4 @@
 - [Домашнее задание 9](10-pipeline/README.md#домашнее-задание-9) (Jenkinsfile)
 - [Домашнее задание 10](12-docker-compose/README.md#домашнее-задание-10) (docker-compose)
 - [Домашнее задание 11](13-github-actions/README.md#домашнее-задание-11) (github-actions)
+- [Домашнее задание 12](14-kubernetes/README.md#домашнее-задание-12) (kubernetes)
