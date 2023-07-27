@@ -1,0 +1,16 @@
+pipeline {
+    agent any
+    stages {
+        stage('Test') {
+            agent {
+                dockerfile {
+                    filename '10-pipeline/files/Dockerfile'
+                }
+            }
+            steps {
+                sh 'curl http://google.com | wc -c > google-size'
+                sh 'cat google-size'
+            }
+        }
+    }
+}

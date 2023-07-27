@@ -1,0 +1,16 @@
+pipeline {
+    agent {
+        label '!docker'
+    }
+    options {
+        timestamps()
+    }
+    stages{
+      stage('Test'){
+        steps{
+          sh ''' echo Hello github
+          '''
+        }
+      }
+    }
+}
