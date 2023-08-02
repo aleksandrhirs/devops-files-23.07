@@ -1,0 +1,156 @@
+---
+- name: master.puppet config
+  hosts: master.puppet
+  become: true
+  tasks:
+
+    - copy:
+        dest: /vagrant/hostvars.json
+        content: "{{ hostvars }}"
+
+    - file:
+        path: '{{ item.fpath }}'
+        state: file
+        owner: vagrant
+        mode: u+rw,g-rwx,o-rwx
+      loop:
+        - { fpath: /home/vagrant/private_key_slave1.puppet }
+        - { fpath: /home/vagrant/private_key_slave2.puppet }
+        - { fpath: /home/vagrant/private_key_gitlab }
+
+    - name: Scan server keys
+      ansible.builtin.known_hosts:
+        path: /etc/ssh/ssh_known_hosts
+        name: gitlab.com
+        key: "{{ lookup('pipe', 'ssh-keyscan -trsa gitlab.com') }}"
+
+    - name: Updated ssh config
+      copy:
+        dest: /home/vagrant/.ssh/config
+        content: |
+          Host gitlab.com
+            HostName gitlab.com
+            IdentityFile /home/vagrant/private_key_gitlab
+
+    - name: Scan slave keys
+      ansible.builtin.known_hosts:
+        path: /etc/ssh/ssh_known_hosts
+        name: "{{ hostvars[item].ansible_host }}"
+        key: "{{ lookup('pipe', 'ssh-keyscan -trsa ' + hostvars[item].ansible_host) }}"
+      with_items:
+      # - slave1.puppet
+      # - slave2.puppet
+      - "{{ groups['slaves'] }}"
+
+    - name: Import a key from a url
+      ansible.builtin.rpm_key:
+        state: present
+        key: https://yum.puppet.com/RPM-GPG-KEY-puppet-20250406
+
+    - name: install the puppet rpm from a remote repo
+      yum:
+        name: https://yum.puppet.com/puppet7-release-el-8.noarch.rpm
+        state: present
+
+    - name: Install puppet server, git
+      yum:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - puppetserver
+        - git
+
+    - name: set puppet memory params
+      lineinfile:
+        path: /etc/sysconfig/puppetserver
+        regexp: '-Xm(s|x)2g'
+        line: '-Xm\g<1>256m'
+        backrefs: yes
+
+    - name: Creating puppet/autosign.conf file
+      copy:
+        dest: "/etc/puppetlabs/puppet/autosign.conf"
+        content: |
+          slave1.puppet
+          slave2.puppet
+
+
+    - name: install r10k
+      gem:
+        name: r10k
+        state: present
+        executable: /opt/puppetlabs/puppet/bin/gem
+        user_install: false
+
+    - name: mkdir /etc/puppetlabs/r10k/
+      file:
+        path: /etc/puppetlabs/r10k/
+        state: directory
+
+    - name: copy r10k conf file
+      copy:
+        src: /vagrant/r10k.yaml
+        dest: /etc/puppetlabs/r10k/r10k.yaml
+
+    - name: Add r10k cron job
+      cron:
+        name: "r10k deploy"
+        minute: "*"
+        hour: "*"
+        user: root
+        job: "/opt/puppetlabs/puppet/bin/r10k deploy environment -p"
+
+    - name: start puppet server
+      service:
+        name: puppetserver
+        enabled: true
+        state: started
+
+    - name: Stop and disable firewalld
+      service:
+        name: firewalld
+        state: stopped
+        enabled: False
+
+- name: slaves config
+  hosts: slaves
+  become: true
+  tasks:
+    - name: Import a key from a url
+      ansible.builtin.rpm_key:
+        state: present
+        key: https://yum.puppet.com/RPM-GPG-KEY-puppet-20250406
+
+    - name: install the puppet rpm from a remote repo
+      yum:
+        name: https://yum.puppet.com/puppet7-release-el-8.noarch.rpm
+        state: present
+
+    - name: Install puppet agent
+      yum:
+        name: puppet-agent
+        state: present
+
+    - name: add puppet-agent configuration
+      ini_file:
+        path: /etc/puppetlabs/puppet/puppet.conf
+        section: agent
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+      with_items:
+      - { option: "server", value: "master.puppet" }
+      - {option: "runinterval", value: "1m" }
+      - {option: "environment", value: "production" }
+
+    - name: add master.puppet to hosts
+      lineinfile:
+        dest: /etc/hosts
+        create: yes
+        insertbefore: EOF
+        line: 192.168.50.2 master.puppet    
+
+    - name: start puppet agent
+      service:
+        name: puppet
+        enabled: true
+        state: started

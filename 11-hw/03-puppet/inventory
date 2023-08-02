@@ -1,0 +1,18 @@
+all:
+  hosts:
+    master.puppet:
+      ansible_host: 192.168.50.2 
+      ansible_connection: local
+  children:
+    slaves: 
+      hosts:   
+        slave1.puppet:
+          ansible_host: 192.168.50.3 
+          ansible_ssh_private_key_file: /home/vagrant/private_key_slave1.puppet
+        slave2.puppet:
+          ansible_host: 192.168.50.4 
+          ansible_ssh_private_key_file: /home/vagrant/private_key_slave2.puppet
+  # vars:
+  #   ansible_ssh_common_args: '-o StrictHostKeyChecking=no'
+
+

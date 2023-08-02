@@ -1,0 +1,25 @@
+---
+version: '2.4'
+services:
+  docker-static:
+    image: static
+    networks:
+    - nginx-net
+  docker-dynamic:
+    image: dynamic
+    networks:
+    - nginx-net
+  nginx:
+    image: nginx
+    ports:
+    - "8080:8080"
+    - "8081:8081"
+    volumes:
+    - ./nginx.config:/etc/nginx/nginx.conf
+    networks:
+    - nginx-net
+    depends_on:
+    - docker-static
+    - docker-dynamic
+networks:
+  nginx-net: {}

@@ -13,3 +13,4 @@
 - [Домашнее задание 11](13-github-actions/README.md#домашнее-задание-11) (github-actions)
 - [Домашнее задание 12](14-kubernetes/README.md#домашнее-задание-12) (kubernetes)
 - [Домашнее задание 13](15-helm/README.md#домашнее-задание-13) (helm)
+- [Курсовой проект](16-argocd/README.md#курсовой-проект) (project)
