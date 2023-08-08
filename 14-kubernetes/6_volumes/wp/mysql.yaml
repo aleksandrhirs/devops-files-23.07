@@ -1,0 +1,44 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: db
+          image: mysql
+          imagePullPolicy: IfNotPresent
+          envFrom:
+          - secretRef:
+              name: mysql-secret
+          ports:
+          - containerPort: 3306
+          volumeMounts:
+          - name: mysql-data
+            mountPath: /var/lib/mysql
+
+      volumes:
+      - name: mysql-data
+        persistentVolumeClaim:
+          claimName: pvc-mysql
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-mysql
+spec:
+  selector:
+    app: mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306
