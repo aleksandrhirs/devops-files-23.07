@@ -1,0 +1,38 @@
+
+postgresql:
+  global:
+    postgresql:
+      auth:
+        postgresPassword: "demopassword"
+        username: "demouser"
+        password: "demopass"
+        database: "demodb"
+  fullnameOverride: postgres
+  primary:
+    persistence: 
+      size: 1Gi
+
+replicas: 1
+
+service:
+  name: billing
+  port: 8080
+
+container:
+  label: billing
+  port: 8080
+  name: billing
+
+image:
+  repository: billing-app
+  tag: v1
+
+ingress:
+  host: 'sites.test.local'
+  path: /svc1
+  pathType: Prefix
+
+initContainer:
+  image:
+    repository: postgres
+    tag: 9.6

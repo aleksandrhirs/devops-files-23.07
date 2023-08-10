@@ -1,0 +1,9 @@
+replicas: 1
+
+image:
+  tag: v2
+
+ingress:
+  host: 'sites-dev.test.local'
+  path: "/"
+  pathType: Prefix

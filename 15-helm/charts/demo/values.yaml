@@ -1,0 +1,19 @@
+replicas: 1
+
+service:
+  name: demo
+  port: 8080
+
+container:
+  label: server1
+  port: 8080
+  name: server
+
+image:
+  repository: api-server
+  tag: v1
+
+ingress:
+  host: 'sites.test.local'
+  path: /svc1
+  pathType: Prefix
