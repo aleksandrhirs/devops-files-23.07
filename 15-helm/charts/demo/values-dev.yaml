@@ -1,9 +1,9 @@
-replicas: 1
+replicas: 3
 
 image:
   tag: v2
 
 ingress:
-  host: 'sites-dev.test.local'
+  host: 'sites-dev.stg.local'
   path: "/"
   pathType: Prefix
