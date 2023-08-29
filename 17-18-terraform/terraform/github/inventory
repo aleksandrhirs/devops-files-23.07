@@ -1,0 +1,2 @@
+[vms]
+10.101.67.124 ansible_private_key_file=/home/vagrant/.ssh/id_rsa

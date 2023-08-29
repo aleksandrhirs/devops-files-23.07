@@ -1,0 +1,5 @@
+myslq_image = "mysql:5.7"
+app_name    = "wp"
+env         = "dev"
+dbpassword  = "demopass"
+dbuser      = "demouser"
